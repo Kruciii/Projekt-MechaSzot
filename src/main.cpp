@@ -6,8 +6,6 @@ AccelStepper stepper2(AccelStepper::FULL4WIRE, 5, 14, 4, 12);
 
 void setup()
 {
-  Serial.begin(115200);
-
   stepper2.setMaxSpeed(300.0);
   stepper2.setAcceleration(100.0);
 
