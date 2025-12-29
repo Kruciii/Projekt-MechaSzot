@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
 #include "Holder.h"
-#include "Cup.h"
+
 
 class Holder {
 private:
@@ -72,3 +72,4 @@ public:
             stepper->run();
         }
     };
+    
