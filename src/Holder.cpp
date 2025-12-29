@@ -1,75 +1,56 @@
+
+// Klasa Holder
+// Steruje silnikiem krokowym dla podstawki z 5 pozycjami (co 72°)
+#include <Holder.h>
 #include <Arduino.h>
-#include <AccelStepper.h>
-#include "Holder.h"
 
-
-class Holder {
-private:
-    AccelStepper* stepper;
-    int currentPos = 0;
-    int krokowyPin = 5;
-    void stepOnce() {
-        digitalWrite(krokowyPin, HIGH);
-        delayMicroseconds(1000); // Czas trwania impulsami
-        digitalWrite(krokowyPin, LOW);
-    }
-    void moveToPosition(int TargetPosition) {
-        int diff=TargetPosition-stepper->currentPosition();
-        if (diff>0) {
-            for (int i=0;i<diff;i++) {
-                stepOnce();
-                currentPos++;
-            }
-        } else if (diff<0) {
-            for (int i=0;i<-diff;i++) {
-                stepOnce();
-                currentPos--;
-            }
-        }
-    }
-public:
-    int KrokowyStepPin; //krokowyStepPin, krokowyDirPin – numery pinów Arduino podłączonych do drivera silnika (STEP i DIR).
-    int KrokowyDirPin;
-    int id=0; // identyfikator danego uchwytu
-    int currrent_angle=0;
-    const int steps_per_revolution = 200; // Liczba kroków na pełny obrót silnika
-    const int angle_per_step = 360 / steps_per_revolution; // Kąt na jeden krok
-    const int steps_for_72_degrees = steps_per_revolution / 5; // Kroków na 72 stopni
-    Holder() {
-        stepper = new AccelStepper(AccelStepper::FULL4WIRE, 5, 4, 14, 12);
-    }
-
-    ~Holder() {
-        delete stepper;
-    }
-    void nextPosition() {
-    int targetPos = (currrent_angle + 1) % 5;
-    moveToPosition(targetPos);
-    currrent_angle = targetPos;
-    }
-    void setOnCup(Cup cup) {
-    int targetPos = (cup.id % 5);
-    moveToPosition(targetPos);
-    currrent_angle = targetPos;
-    }
-    void stepOnce(bool dir) {
-    digitalWrite(KrokowyDirPin, dir ? HIGH : LOW);
-    digitalWrite(KrokowyStepPin, HIGH);
-    delayMicroseconds(500);
-    digitalWrite(KrokowyStepPin, LOW);
-    delayMicroseconds(500);
+Holder::Holder(int stepPin, int dirPin, MicrostepMode mode, int nativeSteps)
+    : _stepPin(stepPin), _dirPin(dirPin), _currentPositionIndex(0) {
+    
+    // Obliczamy całkowitą liczbę kroków: kroki silnika * mnożnik mikrokroków
+    _totalStepsPerRev = (long)nativeSteps * (int)mode;
+    
+    // Obliczamy dystans dla 72 stopni (1/5 obrotu)
+    _stepsFor72Degrees = _totalStepsPerRev / 5;
 }
 
-    void begin() {
-        stepper->setMaxSpeed(300.0);
-        stepper->setAcceleration(100.0);
-        stepper->moveTo(1000000);
+void Holder::begin() {
+    pinMode(_stepPin, OUTPUT);
+    pinMode(_dirPin, OUTPUT);
+    digitalWrite(_stepPin, LOW);
+    digitalWrite(_dirPin, LOW);
+}
+
+void Holder::stepOnce(bool dir) {
+    digitalWrite(_dirPin, dir ? HIGH : LOW);
+    digitalWrite(_stepPin, HIGH);
+    // Przy wysokich mikrokrokach (np. 64) można skrócić te czasy
+    delayMicroseconds(500); 
+    digitalWrite(_stepPin, LOW);
+    delayMicroseconds(500); 
+}
+
+void Holder::moveToPosition(int targetIndex) {
+    if (targetIndex < 0 || targetIndex > 4) return;
+
+    int diff = targetIndex - _currentPositionIndex;
+    if (diff == 0) return;
+
+    bool direction = (diff > 0);
+    long stepsToDo = abs(diff) * _stepsFor72Degrees;
+
+    for (long i = 0; i < stepsToDo; i++) {
+        stepOnce(direction);
     }
 
-        void update() {
-            if (stepper->distanceToGo() == 0)
-                stepper->moveTo(-stepper->currentPosition());
-            stepper->run();
-        }
-    };
-    
+    _currentPositionIndex = targetIndex;
+}
+
+void Holder::nextPosition() {
+    int nextIndex = (_currentPositionIndex + 1) % 5;
+    moveToPosition(nextIndex);
+}
+
+void Holder::setHome() {
+    _currentPositionIndex = 0;
+}

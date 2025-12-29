@@ -1,49 +1,84 @@
 #include <Arduino.h>
 #include <PCF8574.h>
 #include <Relay.h>
-Relay::Relay(uint8_t addr)
+#include "Relay.h"
+
+Relay::Relay(uint8_t addr, bool activeLow)
 {
-    pcf = new PCF8574(addr);
-    for (int i = 0; i < 8; ++i)
-        pcf->pinMode(i, OUTPUT);
+    _addr = addr;
+    _activeLow = activeLow;
+    pcf = new PCF8574(_addr);
     
+    // Ustalenie logiki sterowania
+    if (_activeLow) {
+        ON = LOW;
+        OFF = HIGH;
+    } else {
+        ON = HIGH;
+        OFF = LOW;
+    }
+    // UWAGA: Nie wywołujemy tu pinMode ani Wire!
 }
 
 bool Relay::begin()
 {
-    if (pcf->begin())
+    // Najpierw inicjalizujemy PCF
+    if (!pcf->begin())
     {
-        Serial.println("PCF8574 init ok");
-        return true;
+        Serial.println("PCF8574 init failed");
+        // Nie usuwamy wskaźnika, bo może użytkownik spróbuje begin() ponownie w pętli
+        return false; 
     }
-    delete pcf;
-    Serial.println("PCF8574 init failed");
-    pcf = nullptr;
-    return false;
+
+    Serial.println("PCF8574 init ok");
+
+    // Najpierw ustawiamy stan WYŁĄCZONY na wszystkich pinach,
+    // aby uniknąć przypadkowego włączenia przekaźników przy ustawianiu pinMode.
+    for (int i = 0; i < 8; ++i) {
+        pcf->digitalWrite(i, OFF);
+    }
+
+    // Teraz bezpiecznie ustawiamy jako wyjścia
+    for (int i = 0; i < 8; ++i) {
+        pcf->pinMode(i, OUTPUT);
+    }
+    
+    return true;
 }
 
 void Relay::on(uint8_t pin)
 {
     if (pcf != nullptr && pin < 8)
-        pcf->digitalWrite(pin, onState);
+        pcf->digitalWrite(pin, ON);
 }
+
 void Relay::off(uint8_t pin)
 {
     if (pcf != nullptr && pin < 8)
-        pcf->digitalWrite(pin, offState);
+        pcf->digitalWrite(pin, OFF);
 }
+
 void Relay::toggle(uint8_t pin)
 {
-    if (!pcf)
-        return;
-    uint8_t s = pcf->digitalRead(pin);
-    pcf->digitalWrite(pin, !s);
+    if (!pcf || pin >= 8) return;
+    
+    uint8_t currentState = pcf->digitalRead(pin);
+    // Jeśli obecny stan to ON, ustawiamy OFF i odwrotnie
+    pcf->digitalWrite(pin, (currentState == ON) ? OFF : ON);
 }
+
+void Relay::allOff() {
+    if (!pcf) return;
+    for(int i=0; i<8; i++) off(i);
+}
+
 void Relay::scan()
 {
     byte err, addr;
     int n = 0;
     Serial.println("I2C scan...");
+    // Wire.begin() powinno być wywołane w setup() głównego programu, 
+    // ale dla pewności skaner działa na istniejącej konfiguracji.
     for (addr = 1; addr < 127; ++addr)
     {
         Wire.beginTransmission(addr);
@@ -56,15 +91,16 @@ void Relay::scan()
         }
     }
     Serial.printf("%d device(s)\n", n);
-    delay(5000);
 }
+
 void Relay::test()
 {
+    Serial.println("Test sekwencyjny...");
     for (uint8_t i = 0; i < 8; ++i)
     {
-
         on(i);
-        delay(2000);
+        delay(500); // Skróciłem czas dla szybszego testu
         off(i);
+        delay(200);
     }
 }

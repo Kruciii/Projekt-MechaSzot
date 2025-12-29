@@ -2,11 +2,6 @@
 #include <PCF8574.h>
 #include <Pumps.h>
 
-
-//FUNCKJE PUMP
-
-
-
 Pump::Pump(int index,int pin, Relay* relay) //Domyślny konstruktor
   {
     this->relay = relay; 
