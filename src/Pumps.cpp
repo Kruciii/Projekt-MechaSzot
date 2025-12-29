@@ -46,10 +46,6 @@ bool Pump::update() //Zwraca true jeśli wciąż działa
     return false;
 }
 
-int Pump::getIndex()
-{
-    return index;
-}
 bool Pump::isOn()
 {
     return _isOn;
