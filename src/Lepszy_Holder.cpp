@@ -24,10 +24,10 @@ class Holder
       // Ustaw kierunek (HIGH - np. zgodnie z ruchem wskazówek, LOW - przeciwnie)
       digitalWrite(dirPin, dir ? HIGH : LOW);
       // Krótki impuls na STEP - jeden krok
-      digitalWrite(stepPin, HIGH);
-      delayMicroseconds(800);      // czas trwania impulsu (dopasuj do drivera)
-      digitalWrite(stepPin, LOW);
-      delayMicroseconds(800);      // odstęp między krokami (prędkość)
+      digitalWrite(stepPin, HIGH); // rozpoczęcie kroku
+      delayMicroseconds(1000);      // czas trwania impulsu (trzeba dopasować do drivera)
+      digitalWrite(stepPin, LOW); // zakończenie kroku
+      delayMicroseconds(500);      // odstęp między krokami(prędkość)
     }
   // Sygnalizuje osiągnięcie pozycji (buzzer)
     void confirmPosition() 
@@ -41,22 +41,22 @@ class Holder
       // 3 krótkie "bipnięcia" buzzerem
       for (int i = 0; i < 3; i++)  
       {
-        digitalWrite(buzzerPin, HIGH);
-        delay(120);
-        digitalWrite(buzzerPin, LOW);
-        delay(80);
+        digitalWrite(buzzerPin, HIGH);  // Włącz buzzer
+        delay(120); // Czas trwania dźwięku
+        digitalWrite(buzzerPin, LOW);  // Wyłącz buzzer
+        delay(80); // Przerwa między dźwiękami
       }
     }
   public:
     // Konstruktor klasy Holder
-    Holder(int stepPin_, int dirPin_, int buzzerPin_, int stepsPerRev_)
-      : stepPin(stepPin_),
-      dirPin(dirPin_),
-      buzzerPin(buzzerPin_),
-      stepsPerRevolution(stepsPerRev_),
-      currentPositionIndex(0) // startujemy od pozycji 0 (0°)
+    Holder(int stepPin_, int dirPin_, int buzzerPin_, int stepsPerRev_) // inicjalizacja
+      : stepPin(stepPin_), //piny sterujące silnikiem
+        dirPin(dirPin_), //piny sterujące silnikiem
+        buzzerPin(buzzerPin_), //pin buzzera
+        stepsPerRevolution(stepsPerRev_), //liczba kroków na obrót
+        currentPositionIndex(0) // startujemy od pozycji 0 (0°)
   {
-    stepsFor72Degrees = stepsPerRevolution / 5; // 200 / 5 = 40 kroków na 72°
+    stepsFor72Degrees = stepsPerRevolution/5; // 200 / 5 = 40 kroków na obrót o 72°
   }
 
     // Inicjalizacja pinów - wywołaj w setup()
@@ -92,7 +92,6 @@ class Holder
       // Obliczamy różnicę pozycji (ile "skoków po 72°" trzeba zrobić)
       int diff = targetIndex - currentPositionIndex;
 
-      // Jeśli chcemy, można tu dorobić optymalizację kierunku (krótsza droga);
       // na razie proste przejście w jedną stronę / drugą.
       bool direction = (diff >= 0);              // true = w prawo, false = w lewo
       int stepsToDo = abs(diff) * stepsFor72Degrees; // każdy indeks to 72° => stepsFor72Degrees kroków
@@ -108,7 +107,7 @@ class Holder
       Serial.print("°), krokow: ");
       Serial.println(stepsToDo);
 
-      // Wykonujemy zadany krok po kroku
+      // Wykonujemy zadany krok po pojedynczych krokach
       for (int i = 0; i < stepsToDo; i++) 
       {
         stepOnce(direction);
@@ -140,12 +139,11 @@ class Holder
     }
 };
 // KONFIGURACJA GLOBALNA
-// Załóżmy: driver A4988/DRV8825, klasyczne sterowanie STEP/DIR
-const int STEP_PIN=5;   // dopasuj do swojego podłączenia
-const int DIR_PIN=6;   // dopasuj do swojego podłączenia
+const int STEP_PIN=5;   // trzeba dopasować do naszego podłączenia
+const int DIR_PIN=6;   // trzeba dopasować do naszego podłączenia
 const int BUZZER_PIN=8;   // buzzer sygnalizujący pozycję
 
-// Tworzymy obiekt Holder - podajemy liczbę kroków/obrót (np. NEMA17: 200)
+// Tworzymy obiekt Holder - podajemy liczbę kroków/obrót (u nas 200)
 Holder holder(STEP_PIN, DIR_PIN, BUZZER_PIN, 200);
 
 // Tablica kubków - maksymalnie np. 5 kubków
@@ -182,6 +180,7 @@ void initCupsFromUser()
   }
 
   Serial.println("Kubki zainicjalizowane:");
+  // Wyświetlamy konfigurację kubków (id,pozycje,kąty)
   for (int i = 0; i < cupsCount; i++) 
   {
     Serial.print("Cup id=");
@@ -199,7 +198,7 @@ void setup()
   Serial.begin(9600);
   while (!Serial) 
   {
-    ; // czekaj na otwarcie Serial (np. na Leonardo)
+    ; // czekaj na otwarcie Serial
   }
 
   Serial.println("Start programu Holder + Cup");
@@ -230,5 +229,5 @@ void loop()
   Serial.println("Powrot do pozycji 0 (home)");
   holder.moveToPosition(0);
   // Krótka pauza przed kolejną rundą
-  delay(3000);
+  delay(5000);
 }
