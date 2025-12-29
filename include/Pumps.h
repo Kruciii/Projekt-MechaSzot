@@ -16,7 +16,7 @@ public:
   int getIndex();
   bool update();
   bool isOn();
-  
+  void setFlowRate(float msPerMl) { this->mlMsConversion = msPerMl; }
 private:
   Relay* relay;
   int index;
