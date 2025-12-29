@@ -37,15 +37,7 @@ class Holder
       Serial.print(" (kat: ");
       Serial.print(getCurrentAngle());
       Serial.println("°)");
-
-      // 3 krótkie "bipnięcia" buzzerem
-      for (int i = 0; i < 3; i++)  
-      {
-        digitalWrite(buzzerPin, HIGH);  // Włącz buzzer
-        delay(120); // Czas trwania dźwięku
-        digitalWrite(buzzerPin, LOW);  // Wyłącz buzzer
-        delay(80); // Przerwa między dźwiękami
-      }
+      
     }
   public:
     // Konstruktor klasy Holder
