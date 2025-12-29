@@ -1,69 +1,61 @@
 #include <Arduino.h>
 #include <PCF8574.h>
-Relay::Relay(uint8_t addr)
-{
-    pcf = new PCF8574(addr);
-    for (int i = 0; i < 8; ++i)
-        pcf->pinMode(i, OUTPUT);
-    
-}
+#include <Pumps.h>
 
-bool Relay::begin()
+
+//FUNCKJE PUMP
+
+
+
+Pump::Pump(int index,int pin, Relay* relay) //Domyślny konstruktor
+  {
+    this->relay = relay; 
+    this->index = index;
+    this->pin = pin;
+    this->_isOn = false;
+    this-> duration =0;
+    this-> startTime = 0;
+  }
+int Pump::getIndex() //Zwraca index danej pompy
+  {
+    return index;
+  }
+void Pump::pumpByTime(int time) //Podaj czas w MILISEKUDNACH (1/1000 sekundy)
 {
-    if (pcf->begin())
+    this->duration = time;
+    this->_isOn = true;
+    startTime = millis(); //wpisuje aktualnyu czas
+    relay ->on(pin);
+    this->_isOn  = true;
+}
+void Pump::pumpByVolume(int ml)
+{
+    this->pumpByTime(float(ml)/this->mlMsConversion);
+}
+bool Pump::update() //Zwraca true jeśli wciąż działa
+{
+    
+    if((this->_isOn))
     {
-        Serial.println("PCF8574 init ok");
+        unsigned long currentTime = millis();
+        if(startTime+duration<currentTime)
+        {
+            relay->off(pin);
+            this->_isOn = false;
+            this->startTime = 0; 
+            this->duration = 0;
+            return false;
+        }
         return true;
     }
-    delete pcf;
-    Serial.println("PCF8574 init failed");
-    pcf = nullptr;
     return false;
 }
 
-void Relay::on(uint8_t pin)
+int Pump::getIndex()
 {
-    if (pcf != nullptr && pin < 8)
-        pcf->digitalWrite(pin, onState);
+    return index;
 }
-void Relay::off(uint8_t pin)
+bool Pump::isOn()
 {
-    if (pcf != nullptr && pin < 8)
-        pcf->digitalWrite(pin, offState);
-}
-void Relay::toggle(uint8_t pin)
-{
-    if (!pcf)
-        return;
-    uint8_t s = pcf->digitalRead(pin);
-    pcf->digitalWrite(pin, !s);
-}
-void Relay::scan()
-{
-    byte err, addr;
-    int n = 0;
-    Serial.println("I2C scan...");
-    for (addr = 1; addr < 127; ++addr)
-    {
-        Wire.beginTransmission(addr);
-        err = Wire.endTransmission();
-        if (err == 0)
-        {
-            Serial.print("Found @0x");
-            Serial.println(addr, HEX);
-            ++n;
-        }
-    }
-    Serial.printf("%d device(s)\n", n);
-    delay(5000);
-}
-void Relay::test()
-{
-    for (uint8_t i = 0; i < 8; ++i)
-    {
-
-        on(i);
-        delay(2000);
-        off(i);
-    }
+    return _isOn;
 }
