@@ -16,12 +16,13 @@ private:
 public:
     // Domyślnie Active Low (większość modułów chińskich)
     Relay(uint8_t addr, bool activeLow = true); 
+    Relay(uint8_t addr,PCF8574* expander, bool activeLow = true); 
     bool begin();
     void on(uint8_t pin);
     void off(uint8_t pin);
     void toggle(uint8_t pin);
     void allOff(); // Przydatna funkcja wyłączająca wszystko
-    void scan();
+    static void scan();
     void test();
 };
 

@@ -9,10 +9,16 @@ void s_back() { if(ptr) ptr->handleBtnBack(); }
 
 MechaSzot::MechaSzot() : lcd(ADDR_LCD, 16, 2) {
     ptr = this;
-    pcfRelays = new PCF8574(ADDR_RELAYS);
+
+}
+
+void MechaSzot::begin() {
+    Wire.begin();
+        
+    
     pcfButtons = new PCF8574(ADDR_BUTTONS);
     relayBoard = new Relay(ADDR_RELAYS, true);
-    
+
     pumps[0] = new Pump(0, PIN_PUMP_1, relayBoard);
     pumps[1] = new Pump(1, PIN_PUMP_2, relayBoard);
     pumps[2] = new Pump(2, PIN_PUMP_3, relayBoard);
@@ -33,12 +39,14 @@ MechaSzot::MechaSzot() : lcd(ADDR_LCD, 16, 2) {
     recipes[0] = {"1. Wsciekly Pies", {15, 0, 25, 0}, 2000};
     recipes[1] = {"2. Blue Lagoon",   {10, 10, 10, 10}, 3000};
     recipes[2] = {"3. Czyszczenie",   {50, 50, 50, 50}, 5000};
-}
+    lcd.init();
+    lcd.backlight();
+    Relay::scan();
 
-void MechaSzot::begin() {
-    Wire.begin();
-    lcd.init(); lcd.backlight();
+    
     relayBoard->begin();
+    relayBoard->on(0);
+    
     holder->begin();
     
     btnManager->attach(BTN_NEXT_PIN, s_next);
