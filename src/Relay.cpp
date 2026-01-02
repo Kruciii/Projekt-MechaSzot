@@ -64,7 +64,7 @@ bool Relay::begin()
     // aby uniknąć przypadkowego włączenia przekaźników przy ustawianiu pinMode.
     for (int i = 0; i < 8; ++i)
     {
-        pcf->digitalWrite(i, ON);
+        pcf->digitalWrite(i, OFF);
     }
 
     return true;
