@@ -51,10 +51,17 @@ Arduino posiada ograniczoną liczbę pinów, dlatego zastosowano układy **PCF85
 *   **PCF #2:** Obsługuje przyciski (Menu, Start).
     
 
-Fragment kodu
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   graph TD      MCU[Arduino] -->|I2C| PCF_RELAY[PCF8574 - Przekaźniki]      MCU -->|I2C| PCF_BTN[PCF8574 - Przyciski]      MCU -->|I2C| LCD[Ekran LCD]      MCU -->|Digital Pins| STEPPER[Silnik Krokowy]      PCF_RELAY --> Pumps[Pompy 1-4]      PCF_RELAY --> Mixer[Mieszadło]      PCF_RELAY --> PumpOut[Pompa Wylewająca]   `
-
+```mermaid
+graph TD
+    MCU[Arduino] -->|I2C| PCF_RELAY[PCF8574 - Przekaźniki]
+    MCU -->|I2C| PCF_BTN[PCF8574 - Przyciski]
+    MCU -->|I2C| LCD[Ekran LCD]
+    MCU -->|Digital Pins| STEPPER[Silnik Krokowy]
+    
+    PCF_RELAY --> Pumps[Pompy 1-4]
+    PCF_RELAY --> Mixer[Mieszadło]
+    PCF_RELAY --> PumpOut[Pompa Wylewająca]
+```
 3\. Konfiguracja (Config.h)
 ---------------------------
 
@@ -79,9 +86,11 @@ Pompy są sterowane czasem ("Time-based dispensing"). Nie wiedzą, ile nalały �
 
 Współczynnik kalibracji określa liczbę milisekund potrzebną do nalania **1 ml** płynu.
 
-C++
+```C++
+    // Jeśli wartość to 80.0f, pompa musi pracować 80ms, aby nalać 1ml.
+    #define CALIB_PUMP_1 80.0f
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`// Jeśli wartość to 80.0f, pompa musi pracować 80ms, aby nalać 1ml.  #define CALIB_PUMP_1 80.0f` 
+```
 
 4\. Struktura Kodu (Klasy)
 --------------------------
@@ -130,11 +139,26 @@ Najbardziej zaawansowana część. Nie pyta ciągle "czy wciśnięto?" (polling)
 System działa jako **Skończona Maszyna Stanów (FSM)**. W danej chwili robot może być tylko w jednym trybie.
 
 ### Diagram Przepływu (Proces tworzenia drinka)
-
-Fragment kodu
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   stateDiagram-v2      [*] --> STATE_MENU      STATE_MENU --> STATE_POURING : Wybór i Start      state "Przygotowanie (Zbiornik)" as Prep {          STATE_POURING --> STATE_MIXING : Składniki nalane          STATE_MIXING --> STATE_DISPENSING : Wymieszane      }      state "Rozlewanie (Karuzela)" as Loop {          STATE_DISPENSING --> STATE_ROTATING : Kieliszek pełny          STATE_ROTATING --> STATE_DISPENSING : Następny kieliszek      }      STATE_DISPENSING --> STATE_DONE : Wszystkie (5/5) gotowe      STATE_DONE --> STATE_MENU : Reset   `
-
+```mermaid
+    stateDiagram-v2
+        [*] --> STATE_MENU
+        STATE_MENU --> STATE_POURING : Wybór i Start
+        
+        state "Przygotowanie (Zbiornik)" as Prep {
+            STATE_POURING --> STATE_MIXING : Składniki nalane
+            STATE_MIXING --> STATE_DISPENSING : Wymieszane
+        }
+    
+    
+        state "Rozlewanie (Karuzela)" as Loop {
+            STATE_DISPENSING --> STATE_ROTATING : Kieliszek pełny
+            STATE_ROTATING --> STATE_DISPENSING : Następny kieliszek
+        }
+    
+    
+        STATE_DISPENSING --> STATE_DONE : Wszystkie (5/5) gotowe
+        STATE_DONE --> STATE_MENU : Reset
+```
 ### Opis Stanów:
 
 1.  **STATE\_MENU:** Oczekiwanie na wybór przepisu przyciskami NEXT/PREV.
