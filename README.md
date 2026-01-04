@@ -1,146 +1,173 @@
-🤖 MechaSzot – Zautomatyzowany Barman
-MechaSzot to projekt zautomatyzowanego robota barmańskiego opartego na platformie Arduino. System pobiera składniki z butelek, miesza drinki i rozlewa je do 5 kieliszków umieszczonych na obrotowej karuzeli.
+Jasne, oto pełna treść dokumentacji sformatowana w **Markdown**, gotowa do skopiowania i wklejenia do pliku README.md na GitHubie.
 
-Projekt został stworzony z myślą o edukacji w zakresie systemów wbudowanych, wykorzystując sterowanie magistralą I2C, maszynę stanów (FSM) oraz obsługę przerwań.
+Dodałem również składnię **Mermaid** (diagramy), która jest automatycznie renderowana przez GitHuba, co sprawi, że dokumentacja będzie wyglądać bardzo profesjonalnie.
+
+🤖 MechaSzot – Zautomatyzowany Barman
+=====================================
+
+**MechaSzot** to projekt robota barmańskiego opartego na platformie Arduino. System automatycznie pobiera składniki, miesza je i rozlewa do kieliszków na obrotowej karuzeli. Projekt demonstruje wykorzystanie magistrali I2C, maszyny stanów (FSM) oraz obsługę przerwań w systemach wbudowanych.
 
 📋 Spis Treści
-Funkcjonalności
+--------------
 
-Architektura Sprzętowa
+1.  [Wstęp i Funkcjonalności](https://www.google.com/search?q=#1-wstęp-i-funkcjonalności)
+    
+2.  [Architektura Sprzętowa](https://www.google.com/search?q=#2-architektura-sprzętowa)
+    
+3.  [Konfiguracja (Config.h)](https://www.google.com/search?q=#3-konfiguracja-configh)
+    
+4.  [Struktura Kodu (Klasy)](https://www.google.com/search?q=#4-struktura-kodu-klasy)
+    
+5.  [Logika Systemu (Maszyna Stanów)](https://www.google.com/search?q=#5-logika-systemu-maszyna-stanów)
+    
+6.  [Wskazówki dla Studentów](https://www.google.com/search?q=#6-wskazówki-dla-studentów)
+    
 
-Architektura Oprogramowania
+1\. Wstęp i Funkcjonalności
+---------------------------
 
-Maszyna Stanów (Logika)
+Głównym zadaniem robota jest przygotowanie drinków wg zadanego przepisu. Proces obejmuje:
 
-Konfiguracja i Kalibracja
+*   **Pobieranie:** 4 pompy perystaltyczne dozują składniki z butelek.
+    
+*   **Mieszanie:** Składniki trafiają do głównego zbiornika, gdzie są mieszane.
+    
+*   **Dystrybucja:** Gotowy napój jest rozlewany do 5 kieliszków na obrotowej tacy.
+    
 
-Bezpieczeństwo
+System sterowany jest przez Arduino, wykorzystując magistralę **I2C** do komunikacji z peryferiami (ekran, ekspandery portów), co pozwala zaoszczędzić piny mikrokontrolera.
 
-🌟 Funkcjonalności
-Dozowanie: Obsługa 4 pomp perystaltycznych do składników bazowych.
+2\. Architektura Sprzętowa
+--------------------------
 
-Mieszanie: Centralny zbiornik z mieszadłem i pompą dozującą (output).
+Zrozumienie sprzętu jest kluczowe przed analizą kodu. System składa się z trzech głównych modułów wykonawczych:
 
-Dystrybucja: Karuzela napędzana silnikiem krokowym obsługująca 5 kieliszków (Shotów).
+1.  **Hydraulika:** Pompy i mieszadło sterowane przekaźnikami.
+    
+2.  **Interfejs:** Ekran LCD i przyciski sterujące menu.
+    
+3.  **Mechanika:** Silnik krokowy obraca tacę z kieliszkami (Holder).
+    
 
-Interfejs: Menu na wyświetlaczu LCD (I2C) sterowane przyciskami fizycznymi.
+### Magistrala I2C i Ekspandery (PCF8574)
 
-Wielozadaniowość: Nieblokujące sterowanie pompami (bez delay).
+Arduino posiada ograniczoną liczbę pinów, dlatego zastosowano układy **PCF8574**. Działają one jak "rozgałęziacze" – wykorzystując tylko dwie linie (SDA, SCL), zyskujemy dodatkowe wejścia/wyjścia.
 
-🛠 Architektura Sprzętowa
-System został zaprojektowany tak, aby zminimalizować zużycie pinów mikrokontrolera poprzez wykorzystanie ekspanderów portów I2C.
-
-MCU: Arduino (Uno/Nano/Mega).
-
-Ekspander 1 (PCF8574): Sterowanie przekaźnikami (Pompy 1-4, Mieszadło, Pompa Główna).
-
-Ekspander 2 (PCF8574): Obsługa wejść przycisków (Menu, Start, Stop).
-
-Silnik Krokowy: Obrót tacy z kieliszkami (sterownik np. A4988/DRV8825).
-
-Wyświetlacz: LCD 16x2 / 20x4 po I2C.
+*   **PCF #1:** Steruje przekaźnikami (Pompy, Mieszadło).
+    
+*   **PCF #2:** Obsługuje przyciski (Menu, Start).
+    
 
 Fragment kodu
 
-graph TD
-    MCU[Arduino] -->|I2C SDA/SCL| LCD[Wyświetlacz LCD]
-    MCU -->|I2C SDA/SCL| PCF1[PCF8574 - Przekaźniki]
-    MCU -->|I2C SDA/SCL| PCF2[PCF8574 - Przyciski]
-    MCU -->|Digital Pins| STEP[Sterownik Silnika]
-    MCU -->|Interrupt Pin| PCF2
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   graph TD      MCU[Arduino] -->|I2C| PCF_RELAY[PCF8574 - Przekaźniki]      MCU -->|I2C| PCF_BTN[PCF8574 - Przyciski]      MCU -->|I2C| LCD[Ekran LCD]      MCU -->|Digital Pins| STEPPER[Silnik Krokowy]      PCF_RELAY --> Pumps[Pompy 1-4]      PCF_RELAY --> Mixer[Mieszadło]      PCF_RELAY --> PumpOut[Pompa Wylewająca]   `
 
-    PCF1 -->|Relay| P1[Pompa 1]
-    PCF1 -->|Relay| P2[Pompa 2]
-    PCF1 -->|Relay| P3[Pompa 3]
-    PCF1 -->|Relay| P4[Pompa 4]
-    PCF1 -->|Relay| MIX[Mieszadło]
-    PCF1 -->|Relay| POUT[Pompa Wylewająca]
+3\. Konfiguracja (Config.h)
+---------------------------
+
+Plik Config.h to "centrum dowodzenia". Tutaj definiujemy fizyczne parametry robota. Zmiany w sprzęcie (np. wymiana rurek na grubsze) wymagają edycji tylko tego pliku.
+
+### Kluczowe ustawienia:
+
+*   **Adresy I2C:** ADDR\_RELAYS, ADDR\_BUTTONS – muszą zgadzać się z fizycznymi zworkami na modułach.
     
-    STEP --> MOTOR[Silnik Karuzeli]
-💻 Architektura Oprogramowania
-Kod jest zorganizowany obiektowo. Główne klasy systemu:
+*   **Piny:** Przypisanie konkretnych pomp do pinów ekspandera.
+    
+*   **Logika kieliszków:**
+    
+    *   SHOT\_SIZE\_ML (np. 40ml) – ile nalać do jednego kieliszka.
+        
+    *   CUPS\_COUNT (np. 5) – liczba kieliszków na tacy.
+        
 
-1. Relay
-Klasa typu "wrapper" na pojedynczy pin ekspandera.
+### 🧪 Kalibracja Pomp
 
-Obsługuje logikę Active Low (stan NISKI włącza urządzenie).
+Pompy są sterowane czasem ("Time-based dispensing"). Nie wiedzą, ile nalały – wiedzą tylko, jak długo pracują.
 
-Zawiera metody bezpieczeństwa allOff().
+Współczynnik kalibracji określa liczbę milisekund potrzebną do nalania **1 ml** płynu.
 
-2. Pump
-Inteligentna obsługa dozowania płynów.
+C++
 
-Zasada działania: Przelicza mililitry na czas pracy pompy.
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`// Jeśli wartość to 80.0f, pompa musi pracować 80ms, aby nalać 1ml.  #define CALIB_PUMP_1 80.0f` 
 
-Non-blocking: Wykorzystuje millis() w metodzie update(), co pozwala na równoległą obsługę przycisków podczas nalewania.
+4\. Struktura Kodu (Klasy)
+--------------------------
 
-3. Holder
-Sterownik mechaniki karuzeli.
+Kod został podzielony na obiekty odpowiadające fizycznym elementom robota.
 
-Odpowiada za precyzyjne sterowanie silnikiem krokowym.
+### A. Klasa Relay (Włącznik)
 
-Przelicza kroki silnika na pozycje kieliszków (obrót o 72 stopnie).
+Obsługuje piny na ekspanderze PCF8574.
 
-4. ButtonManager
-Zaawansowana obsługa wejścia.
+*   **Active Low:** Obsługuje logikę odwrotną (stan NISKI włącza przekaźnik), co jest standardem w modułach przekaźników.
+    
+*   **Bezpieczeństwo:** Metoda allOff() natychmiast wyłącza wszystko.
+    
 
-Działa w oparciu o przerwania sprzętowe (Interrupts), a nie polling.
+### B. Klasa Pump (Inteligentny Barman)
 
-Oszczędza czas procesora – sprawdza stan przycisków przez I2C tylko wtedy, gdy zostanie zgłoszone przerwanie na pinie INT_PIN.
+Wrapper na przekaźnik, który przelicza objętość na czas.
 
-🧠 Maszyna Stanów (Logika)
-Sercem systemu jest klasa MechaSzot realizująca wzorzec Finite State Machine. Robot zawsze znajduje się w jednym z poniższych stanów:
+*   **Nieblokowanie (update()):** Pompa **NIE** używa delay(). Zapisuje czas startu i w każdej pętli sprawdza, czy czas już minął. Dzięki temu procesor może w międzyczasie obsługiwać przyciski czy ekran.
+    
+
+### C. Klasa Holder (Karuzela)
+
+Steruje silnikiem krokowym.
+
+*   Oblicza liczbę kroków potrzebną do obrotu o 1/5 obwodu (72 stopnie).
+    
+*   Metoda moveToPosition wykonuje fizyczny ruch tacy.
+    
+
+### D. Klasa ButtonManager (Przerwania)
+
+Najbardziej zaawansowana część. Nie pyta ciągle "czy wciśnięto?" (polling), lecz czeka na sygnał.
+
+1.  Naciśnięcie przycisku zmienia stan pinu INT\_PIN.
+    
+2.  Uruchamia się szybkie przerwanie (ISR).
+    
+3.  Dopiero w pętli głównej procesor sprawdza przez I2C, co dokładnie wciśnięto.
+    
+
+5\. Logika Systemu: Maszyna Stanów
+----------------------------------
+
+System działa jako **Skończona Maszyna Stanów (FSM)**. W danej chwili robot może być tylko w jednym trybie.
+
+### Diagram Przepływu (Proces tworzenia drinka)
 
 Fragment kodu
 
-stateDiagram-v2
-    [*] --> STATE_MENU
-    STATE_MENU --> STATE_POURING : Start
-    STATE_POURING --> STATE_MIXING : Składniki nalane
-    STATE_MIXING --> STATE_DISPENSING : Wymieszane
+Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   stateDiagram-v2      [*] --> STATE_MENU      STATE_MENU --> STATE_POURING : Wybór i Start      state "Przygotowanie (Zbiornik)" as Prep {          STATE_POURING --> STATE_MIXING : Składniki nalane          STATE_MIXING --> STATE_DISPENSING : Wymieszane      }      state "Rozlewanie (Karuzela)" as Loop {          STATE_DISPENSING --> STATE_ROTATING : Kieliszek pełny          STATE_ROTATING --> STATE_DISPENSING : Następny kieliszek      }      STATE_DISPENSING --> STATE_DONE : Wszystkie (5/5) gotowe      STATE_DONE --> STATE_MENU : Reset   `
+
+### Opis Stanów:
+
+1.  **STATE\_MENU:** Oczekiwanie na wybór przepisu przyciskami NEXT/PREV.
     
-    state Pętla_Nalewania {
-        STATE_DISPENSING --> STATE_ROTATING : Kieliszek pełny
-        STATE_ROTATING --> STATE_DISPENSING : Następna pozycja
-    }
+2.  **STATE\_POURING:** Pompy dozują składniki do mieszalnika (zgodnie z amounts\[\]).
     
-    STATE_DISPENSING --> STATE_DONE : Wszystkie kieliszki (5/5)
-    STATE_DONE --> STATE_MENU : Reset
-MENU: Wybór drinka.
+3.  **STATE\_MIXING:** Mieszadło pracuje przez mixTimeMs.
+    
+4.  **STATE\_DISPENSING:** Pompa główna nalewa porcję (SHOT\_SIZE\_ML) do kieliszka.
+    
+5.  **STATE\_ROTATING:** Karuzela obraca się do następnej pozycji.
+    
+6.  **STATE\_DONE:** Koniec pracy, wyświetlenie komunikatu.
+    
 
-POURING: Pobieranie składników z butelek do zbiornika głównego.
+6\. Wskazówki dla Studentów
+---------------------------
 
-MIXING: Mieszanie składników.
+> ⚠️ Uwaga: Kod blokujący
+> 
+> Funkcja holder->nextPosition() (obrót silnika) jest funkcją blokującą. Oznacza to, że w trakcie obracania tacy interfejs może chwilowo nie reagować. Jest to zamierzone uproszczenie.
 
-DISPENSING: Nalewanie pojedynczej porcji (Shot) do kieliszka.
+> 🔌 Hardware Check
+> 
+> Jeśli przyciski nie działają, sprawdź połączenie pinu INT\_PIN (zazwyczaj D2 lub D3 w Arduino Uno). Bez sygnału przerwania ButtonManager nie zadziała.
 
-ROTATING: Obrót karuzeli do następnego, pustego kieliszka.
-
-DONE: Zakończenie pracy.
-
-⚙️ Konfiguracja i Kalibracja
-Wszystkie ustawienia fizyczne znajdują się w pliku Config.h. Nie należy zmieniać logiki w plikach .cpp, jedynie parametry tutaj.
-
-Adresacja I2C
-Upewnij się, że adresy zgadzają się z ustawieniem zworek na modułach:
-
-C++
-
-#define ADDR_RELAYS  0x20
-#define ADDR_BUTTONS 0x21
-Kalibracja Pomp
-Kluczowy parametr dla precyzji drinków. Określa, ile milisekund pompa musi pracować, aby nalać 1 ml płynu.
-
-C++
-
-// Przykład: 80ms pracy = 1ml płynu
-#define CALIB_PUMP_1 80.0f 
-#define CALIB_PUMP_2 85.0f 
-Wskazówka: Jeśli pompa nalewa za mało, zwiększ tę wartość.
-
-⚠️ Bezpieczeństwo
-Emergency Stop: Przycisk BACK pełni funkcję wyłącznika bezpieczeństwa. Jego naciśnięcie wywołuje stopAll(), natychmiast odcinając zasilanie wszystkich przekaźników.
-
-Blokowanie: Funkcja obrotu karuzeli (holder->nextPosition()) jest blokująca. W trakcie obrotu interfejs może mieć minimalne opóźnienie.
-
-Dokumentacja przygotowana dla projektu studenckiego MechaSzot.
+> 🛑 Emergency Stop
+> 
+> Przycisk BACK pełni funkcję wyłącznika bezpieczeństwa. Jego naciśnięcie wywołuje funkcję stopAll(), która natychmiast odcina zasilanie pomp i resetuje maszynę do menu.
