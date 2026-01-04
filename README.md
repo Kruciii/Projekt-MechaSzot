@@ -1,7 +1,3 @@
-Jasne, oto pełna treść dokumentacji sformatowana w **Markdown**, gotowa do skopiowania i wklejenia do pliku README.md na GitHubie.
-
-Dodałem również składnię **Mermaid** (diagramy), która jest automatycznie renderowana przez GitHuba, co sprawi, że dokumentacja będzie wyglądać bardzo profesjonalnie.
-
 🤖 MechaSzot – Zautomatyzowany Barman
 =====================================
 
