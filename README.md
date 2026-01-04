@@ -1,3 +1,5 @@
+Oto poprawiona wersja dokumentacji. Linki w spisie treści są teraz poprawnymi "kotwicami" wewnętrznymi, które będą działać na GitHubie (przeniosą Cię do odpowiedniej sekcji po kliknięciu).
+
 🤖 MechaSzot – Zautomatyzowany Barman
 =====================================
 
@@ -6,17 +8,12 @@
 📋 Spis Treści
 --------------
 
-1.  [Wstęp i Funkcjonalności](https://www.google.com/search?q=#1-wstęp-i-funkcjonalności)
-    
-2.  [Architektura Sprzętowa](https://www.google.com/search?q=#2-architektura-sprzętowa)
-    
-3.  [Konfiguracja (Config.h)](https://www.google.com/search?q=#3-konfiguracja-configh)
-    
-4.  [Struktura Kodu (Klasy)](https://www.google.com/search?q=#4-struktura-kodu-klasy)
-    
-5.  [Logika Systemu (Maszyna Stanów)](https://www.google.com/search?q=#5-logika-systemu-maszyna-stanów)
-    
-6.  [Wskazówki dla Studentów](https://www.google.com/search?q=#6-wskazówki-dla-studentów)
+1. [Wstęp i Funkcjonalności](#1-wstęp-i-funkcjonalności)
+2. [Architektura Sprzętowa](#2-architektura-sprzętowa)
+3. [Konfiguracja (Config.h)](#3-konfiguracja-configh)
+4. [Struktura Kodu (Klasy)](#4-struktura-kodu-klasy)
+5. [Logika Systemu (Maszyna Stanów)](#5-logika-systemu-maszyna-stanów)
+6. [Wskazówki dla Studentów](#6-wskazówki-dla-studentów)
     
 
 1\. Wstęp i Funkcjonalności
@@ -156,14 +153,8 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
 6\. Wskazówki dla Studentów
 ---------------------------
 
-> ⚠️ Uwaga: Kod blokujący
-> 
-> Funkcja holder->nextPosition() (obrót silnika) jest funkcją blokującą. Oznacza to, że w trakcie obracania tacy interfejs może chwilowo nie reagować. Jest to zamierzone uproszczenie.
+> ⚠️ **Uwaga: Kod blokujący**Funkcja holder->nextPosition() (obrót silnika) jest funkcją **blokującą**. Oznacza to, że w trakcie obracania tacy interfejs może chwilowo nie reagować. Jest to zamierzone uproszczenie.
 
-> 🔌 Hardware Check
-> 
-> Jeśli przyciski nie działają, sprawdź połączenie pinu INT\_PIN (zazwyczaj D2 lub D3 w Arduino Uno). Bez sygnału przerwania ButtonManager nie zadziała.
+> 🔌 **Hardware Check**Jeśli przyciski nie działają, sprawdź połączenie pinu INT\_PIN (zazwyczaj D2 lub D3 w Arduino Uno). Bez sygnału przerwania ButtonManager nie zadziała.
 
-> 🛑 Emergency Stop
-> 
-> Przycisk BACK pełni funkcję wyłącznika bezpieczeństwa. Jego naciśnięcie wywołuje funkcję stopAll(), która natychmiast odcina zasilanie pomp i resetuje maszynę do menu.
+> 🛑 **Emergency Stop**Przycisk BACK pełni funkcję wyłącznika bezpieczeństwa. Jego naciśnięcie wywołuje funkcję stopAll(), która natychmiast odcina zasilanie pomp i resetuje maszynę do menu.
