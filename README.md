@@ -1,5 +1,3 @@
-Oto poprawiona wersja dokumentacji. Linki w spisie treści są teraz poprawnymi "kotwicami" wewnętrznymi, które będą działać na GitHubie (przeniosą Cię do odpowiedniej sekcji po kliknięciu).
-
 🤖 MechaSzot – Zautomatyzowany Barman
 =====================================
 
