@@ -25,7 +25,10 @@ void Pump::pumpByTime(int time) //Podaj czas w MILISEKUDNACH (1/1000 sekundy)
 }
 void Pump::pumpByVolume(int ml)
 {
-    this->pumpByTime(float(ml)/this->mlMsConversion);
+    // mlMsConversion stores milliseconds per milliliter, so duration should be ml * ms/ml
+    int calculatedMs = (int)(ml * this->mlMsConversion);
+    if (calculatedMs <= 0) calculatedMs = 1; // ensure at least 1 ms
+    this->pumpByTime(calculatedMs);
 }
 bool Pump::update() //Zwraca true jeśli wciąż działa
 {

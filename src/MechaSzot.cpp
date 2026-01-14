@@ -7,10 +7,13 @@ void s_prev() { if(ptr) ptr->handleBtnPrev(); }
 void s_ok()   { if(ptr) ptr->handleBtnOk(); }
 void s_back() { if(ptr) ptr->handleBtnBack(); }
 
-MechaSzot::MechaSzot() : lcd(ADDR_LCD, 16, 2) {
+MechaSzot::MechaSzot()
+    : pcfRelays(nullptr), pcfButtons(nullptr), relayBoard(nullptr), btnManager(nullptr),
+      lcd(ADDR_LCD, 16, 2), holder(nullptr), mixer(nullptr),
+      pumps{nullptr, nullptr, nullptr, nullptr}, pumpOut(nullptr) {
     ptr = this;
 
-}
+} 
 
 void MechaSzot::begin() {
     Wire.begin();
@@ -45,7 +48,7 @@ void MechaSzot::begin() {
 
     
     relayBoard->begin();
-    relayBoard->on(0);
+    
     
     holder->begin();
     
@@ -61,10 +64,10 @@ void MechaSzot::begin() {
 }
 
 void MechaSzot::update() {
-    btnManager->loop();
-    mixer->update();
-    for(auto p : pumps) p->update();
-    pumpOut->update();
+    if (btnManager) btnManager->loop();
+    if (mixer) mixer->update();
+    for (auto p : pumps) if (p) p->update();
+    if (pumpOut) pumpOut->update();
 
     switch(state) {
         case STATE_POURING: {
@@ -86,19 +89,31 @@ void MechaSzot::update() {
             }
             break;
         case STATE_DISPENSING:
-            if(!pumpOut->isOn()) {
+            if (!pumpOut->isOn()) {
                 cupsFilled++;
-                if(cupsFilled >= CUPS_COUNT) state = STATE_DONE;
+                if (cupsFilled >= CUPS_COUNT) state = STATE_DONE;
                 else {
-                    lcd.setCursor(0,1); lcd.print("Kieliszek: " + String(cupsFilled+1));
-                    holder->nextPosition(); // Blokujące
-                    state = STATE_ROTATING;
+                    lcd.setCursor(0,1);
+                    lcd.print("Kieliszek: ");
+                    lcd.print(cupsFilled + 1);
+                    if (holder) {
+                        int nextIndex = (holder->getCurrentPositionIndex() + 1) % 5;
+                        holder->startMoveToPosition(nextIndex); // Non-blocking
+                        state = STATE_ROTATING;
+                    } else {
+                        state = STATE_DONE;
+                    }
                 }
             }
             break;
         case STATE_ROTATING:
-            pumpOut->pumpByVolume(SHOT_SIZE_ML);
-            state = STATE_DISPENSING;
+            if (holder && holder->isMoving()) {
+                holder->update();
+            } else {
+                // rotation finished (or no holder), start next pour
+                if (pumpOut) pumpOut->pumpByVolume(SHOT_SIZE_ML);
+                state = STATE_DISPENSING;
+            }
             break;
         case STATE_DONE:
             lcd.clear(); lcd.print("Gotowe!");
@@ -120,17 +135,20 @@ void MechaSzot::startRecipe() {
 void MechaSzot::drawMenu() {
     lcd.clear(); lcd.print("Wybierz:");
     lcd.setCursor(0,1); lcd.print(recipes[currentRecipe].name);
+    lcd.display();
 }
 void MechaSzot::stopAll() {
     relayBoard->allOff(); mixer->off();
 }
 
 void MechaSzot::handleBtnNext() {
-    if(state == STATE_MENU) {
+    if (state == STATE_MENU) {
         currentRecipe = (currentRecipe + 1) % 3;
         drawMenu();
-    } else if(state == STATE_CALIBRATION) holder->nextPosition();
-}
+    } else if (state == STATE_CALIBRATION && holder) {
+        holder->nextPosition();
+    }
+} 
 void MechaSzot::handleBtnPrev() {
     if(state == STATE_MENU) {
         currentRecipe = (currentRecipe - 1 + 3) % 3;
@@ -138,9 +156,9 @@ void MechaSzot::handleBtnPrev() {
     }
 }
 void MechaSzot::handleBtnOk() {
-    if(state == STATE_MENU) startRecipe();
-    else if(state == STATE_CALIBRATION) {
-        holder->setHome();
+    if (state == STATE_MENU) startRecipe();
+    else if (state == STATE_CALIBRATION) {
+        if (holder) holder->setHome();
         state = STATE_MENU;
         drawMenu();
     }

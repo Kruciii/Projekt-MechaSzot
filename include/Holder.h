@@ -30,8 +30,16 @@ public:
     Holder(int stepPin, int dirPin, MicrostepMode mode, int nativeSteps = 200);
 
     void begin();
+
+    // Blocking API (kept for calibration / compatibility)
     void nextPosition();
     void moveToPosition(int targetIndex);
+
+    // Non-blocking API
+    void startMoveToPosition(int targetIndex); // start an asynchronous move
+    void update();                                // call frequently from loop/update
+    bool isMoving() const { return _isMoving; }
+
     void setHome();
 
     int getCurrentPositionIndex() const { return _currentPositionIndex; }
@@ -42,6 +50,12 @@ private:
     long _totalStepsPerRev; // Całkowita liczba mikrokroków na obrót
     long _stepsFor72Degrees;
     int _currentPositionIndex;
+
+    // Non-blocking state
+    int _targetIndex = -1;
+    long _stepsRemaining = 0;
+    bool _direction = false;
+    bool _isMoving = false;
 
     void stepOnce(bool dir);
 };

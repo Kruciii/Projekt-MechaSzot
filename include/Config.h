@@ -4,7 +4,7 @@
 // --- ADRESY I2C ---
 #define ADDR_RELAYS  0x24  // Adres modułu przekaźników
 #define ADDR_BUTTONS 0x25  // Adres modułu przycisków (jeśli inny) lub ten sam
-#define ADDR_LCD     0x20  // Adres ekranu LCD
+#define ADDR_LCD     0x27  // Adres ekranu LCD
 
 // --- PINY NA EKSPANDERZE PRZEKAŹNIKÓW (Relay) ---
 // Piny 0-7 na module PCF8574 sterującym przekaźnikami
